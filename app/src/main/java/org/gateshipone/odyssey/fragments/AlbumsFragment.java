@@ -39,6 +39,7 @@ import org.gateshipone.odyssey.models.ArtistModel;
 import org.gateshipone.odyssey.utils.MusicLibraryHelper;
 import org.gateshipone.odyssey.viewmodels.AlbumViewModel;
 import org.gateshipone.odyssey.viewmodels.GenericViewModel;
+import org.gateshipone.odyssey.viewmodels.SearchViewModel;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModelProvider;
@@ -64,6 +65,15 @@ public class AlbumsFragment extends GenericAlbumsFragment {
 
         // setup observer for the live data
         getViewModel().getData().observe(getViewLifecycleOwner(), this::onDataReady);
+
+        SearchViewModel searchViewModel = new ViewModelProvider(requireActivity()).get(SearchViewModel.class);
+        searchViewModel.getSearchString().observe(getViewLifecycleOwner(), searchString -> {
+            if (searchString != null) {
+                applyFilter(searchString);
+            } else {
+                removeFilter();
+            }
+        });
 
         return rootView;
     }

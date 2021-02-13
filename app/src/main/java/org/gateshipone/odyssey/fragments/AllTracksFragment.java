@@ -45,6 +45,7 @@ import org.gateshipone.odyssey.utils.MusicLibraryHelper;
 import org.gateshipone.odyssey.utils.PreferenceHelper;
 import org.gateshipone.odyssey.utils.ThemeUtils;
 import org.gateshipone.odyssey.viewmodels.GenericViewModel;
+import org.gateshipone.odyssey.viewmodels.SearchViewModel;
 import org.gateshipone.odyssey.viewmodels.TrackViewModel;
 
 import androidx.annotation.NonNull;
@@ -104,6 +105,15 @@ public class AllTracksFragment extends OdysseyFragment<TrackModel> implements Ad
 
         // setup observer for the live data
         getViewModel().getData().observe(getViewLifecycleOwner(), this::onDataReady);
+
+        SearchViewModel searchViewModel = new ViewModelProvider(requireActivity()).get(SearchViewModel.class);
+        searchViewModel.getSearchString().observe(getViewLifecycleOwner(), searchString -> {
+            if (searchString != null) {
+                applyFilter(searchString);
+            } else {
+                removeFilter();
+            }
+        });
 
         return rootView;
     }

@@ -43,6 +43,7 @@ import org.gateshipone.odyssey.activities.GenericActivity;
 import org.gateshipone.odyssey.listener.OnRecentAlbumsSelectedListener;
 import org.gateshipone.odyssey.listener.ToolbarAndFABCallback;
 import org.gateshipone.odyssey.utils.ThemeUtils;
+import org.gateshipone.odyssey.viewmodels.SearchViewModel;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.SearchView;
@@ -51,6 +52,7 @@ import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.viewpager.widget.ViewPager;
 
 public class MyMusicFragment extends Fragment implements TabLayout.OnTabSelectedListener {
@@ -281,20 +283,12 @@ public class MyMusicFragment extends Fragment implements TabLayout.OnTabSelected
 
         final OdysseyFragment<?> fragment = mMyMusicPagerAdapter.getRegisteredFragment(tab.getPosition());
 
-        if (fragment != null) {
-            // apply old search string to new selected fragment
-            if (mSearchString != null) {
-                fragment.applyFilter(mSearchString);
-            } else {
-                // just in case
-                fragment.removeFilter();
-            }
-
-            fragment.getContent();
-
-            // Disable memory trimming to prevent removing the shown data
-            fragment.enableMemoryTrimming(false);
-        }
+//        if (fragment != null) {
+//            fragment.getContent();
+//
+//            // Disable memory trimming to prevent removing the shown data
+//            fragment.enableMemoryTrimming(false);
+//        }
     }
 
     /**
@@ -306,10 +300,10 @@ public class MyMusicFragment extends Fragment implements TabLayout.OnTabSelected
     public void onTabUnselected(TabLayout.Tab tab) {
         final OdysseyFragment<?> fragment = mMyMusicPagerAdapter.getRegisteredFragment(tab.getPosition());
 
-        if (fragment != null) {
-            // Reenable memory trimming now, because the Fragment is hidden
-            fragment.enableMemoryTrimming(true);
-        }
+//        if (fragment != null) {
+//            // Reenable memory trimming now, because the Fragment is hidden
+//            fragment.enableMemoryTrimming(true);
+//        }
     }
 
 
@@ -356,12 +350,7 @@ public class MyMusicFragment extends Fragment implements TabLayout.OnTabSelected
             searchView.setIconified(false);
             mOptionMenu.findItem(R.id.action_search).expandActionView();
             // Set the query string
-            searchView.setQuery(mSearchString, false);
-
-            // trigger reload in case of device rotation i.e.
-            final OdysseyFragment<?> fragment = mMyMusicPagerAdapter.getRegisteredFragment(mMyMusicViewPager.getCurrentItem());
-            // Notify the adapter
-            fragment.applyFilter(mSearchString);
+            searchView.setQuery(mSearchString, true);
         }
 
         searchView.setOnQueryTextListener(new SearchTextObserver());
@@ -467,14 +456,15 @@ public class MyMusicFragment extends Fragment implements TabLayout.OnTabSelected
         }
 
         private void applyFilter(String filter) {
-            final OdysseyFragment<?> fragment = mMyMusicPagerAdapter.getRegisteredFragment(mMyMusicViewPager.getCurrentItem());
+
+            SearchViewModel searchViewModel = new ViewModelProvider(requireActivity()).get(SearchViewModel.class);
 
             if (filter.isEmpty()) {
                 mSearchString = null;
-                fragment.removeFilter();
+                searchViewModel.clearSearchString();
             } else {
                 mSearchString = filter;
-                fragment.applyFilter(filter);
+                searchViewModel.setSearchString(filter);
             }
         }
     }

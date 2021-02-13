@@ -48,6 +48,7 @@ import org.gateshipone.odyssey.utils.ThemeUtils;
 import org.gateshipone.odyssey.viewitems.GenericImageViewItem;
 import org.gateshipone.odyssey.viewmodels.ArtistViewModel;
 import org.gateshipone.odyssey.viewmodels.GenericViewModel;
+import org.gateshipone.odyssey.viewmodels.SearchViewModel;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModelProvider;
@@ -112,6 +113,15 @@ public class ArtistsFragment extends OdysseyFragment<ArtistModel> implements Ada
 
         // setup observer for the live data
         getViewModel().getData().observe(getViewLifecycleOwner(), this::onDataReady);
+
+        SearchViewModel searchViewModel = new ViewModelProvider(requireActivity()).get(SearchViewModel.class);
+        searchViewModel.getSearchString().observe(getViewLifecycleOwner(), searchString -> {
+            if (searchString != null) {
+                applyFilter(searchString);
+            } else {
+                removeFilter();
+            }
+        });
 
         return rootView;
     }
