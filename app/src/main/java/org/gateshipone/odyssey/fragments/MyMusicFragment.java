@@ -46,6 +46,7 @@ import org.gateshipone.odyssey.utils.ThemeUtils;
 import org.gateshipone.odyssey.viewmodels.SearchViewModel;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.core.graphics.drawable.DrawableCompat;
@@ -113,17 +114,25 @@ public class MyMusicFragment extends Fragment implements TabLayout.OnTabSelected
         return fragment;
     }
 
-    /**
-     * Called to create instantiate the UI of the fragment.
-     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_my_music, container, false);
+    }
 
-        // Inflate the layout for this fragment
-        final View rootView = inflater.inflate(R.layout.fragment_my_music, container, false);
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
         // create tabs
-        final TabLayout tabLayout = rootView.findViewById(R.id.my_music_tab_layout);
+        final TabLayout tabLayout = view.findViewById(R.id.my_music_tab_layout);
+
+        // setup viewpager
+        mMyMusicViewPager = view.findViewById(R.id.my_music_viewpager);
+        mMyMusicPagerAdapter = new MyMusicPagerAdapter(getChildFragmentManager());
+        mMyMusicViewPager.setAdapter(mMyMusicPagerAdapter);
+        mMyMusicViewPager.setOffscreenPageLimit(2);
+        tabLayout.setupWithViewPager(mMyMusicViewPager, false);
+        tabLayout.addOnTabSelectedListener(this);
 
         // setup icons for tabs
         final ColorStateList tabColors = tabLayout.getTabTextColors();
@@ -132,29 +141,21 @@ public class MyMusicFragment extends Fragment implements TabLayout.OnTabSelected
         if (drawable != null) {
             Drawable icon = DrawableCompat.wrap(drawable);
             DrawableCompat.setTintList(icon, tabColors);
-            tabLayout.addTab(tabLayout.newTab().setIcon(icon));
+            tabLayout.getTabAt(0).setIcon(icon);
         }
         drawable = ResourcesCompat.getDrawable(res, R.drawable.ic_album_24dp, null);
         if (drawable != null) {
             Drawable icon = DrawableCompat.wrap(drawable);
             DrawableCompat.setTintList(icon, tabColors);
-            tabLayout.addTab(tabLayout.newTab().setIcon(icon));
+            tabLayout.getTabAt(1).setIcon(icon);
         }
         drawable = ResourcesCompat.getDrawable(res, R.drawable.ic_my_library_music_24dp, null);
         if (drawable != null) {
             Drawable icon = DrawableCompat.wrap(drawable);
             DrawableCompat.setTintList(icon, tabColors);
-            tabLayout.addTab(tabLayout.newTab().setIcon(icon));
+            tabLayout.getTabAt(2).setIcon(icon);
         }
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
-
-        // setup viewpager
-        mMyMusicViewPager = rootView.findViewById(R.id.my_music_viewpager);
-        mMyMusicPagerAdapter = new MyMusicPagerAdapter(getChildFragmentManager());
-        mMyMusicViewPager.setAdapter(mMyMusicPagerAdapter);
-        mMyMusicViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
-        mMyMusicViewPager.setOffscreenPageLimit(2);
-        tabLayout.addOnTabSelectedListener(this);
 
         // try to resume the saved search string
         if (savedInstanceState != null) {
@@ -183,8 +184,6 @@ public class MyMusicFragment extends Fragment implements TabLayout.OnTabSelected
                     break;
             }
         }
-
-        return rootView;
     }
 
     @Override
@@ -283,12 +282,12 @@ public class MyMusicFragment extends Fragment implements TabLayout.OnTabSelected
 
         final OdysseyFragment<?> fragment = mMyMusicPagerAdapter.getRegisteredFragment(tab.getPosition());
 
-//        if (fragment != null) {
-//            fragment.getContent();
-//
-//            // Disable memory trimming to prevent removing the shown data
-//            fragment.enableMemoryTrimming(false);
-//        }
+        if (fragment != null) {
+            fragment.getContent();
+
+            // Disable memory trimming to prevent removing the shown data
+            fragment.enableMemoryTrimming(false);
+        }
     }
 
     /**
@@ -300,10 +299,10 @@ public class MyMusicFragment extends Fragment implements TabLayout.OnTabSelected
     public void onTabUnselected(TabLayout.Tab tab) {
         final OdysseyFragment<?> fragment = mMyMusicPagerAdapter.getRegisteredFragment(tab.getPosition());
 
-//        if (fragment != null) {
-//            // Reenable memory trimming now, because the Fragment is hidden
-//            fragment.enableMemoryTrimming(true);
-//        }
+        if (fragment != null) {
+            // Reenable memory trimming now, because the Fragment is hidden
+            fragment.enableMemoryTrimming(true);
+        }
     }
 
 
@@ -383,7 +382,7 @@ public class MyMusicFragment extends Fragment implements TabLayout.OnTabSelected
     private static class MyMusicPagerAdapter extends FragmentStatePagerAdapter {
         static final int NUMBER_OF_PAGES = 3;
 
-        private SparseArray<OdysseyFragment<?>> mRegisteredFragments;
+        private final SparseArray<OdysseyFragment<?>> mRegisteredFragments;
 
         public MyMusicPagerAdapter(FragmentManager fm) {
             super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
@@ -445,7 +444,7 @@ public class MyMusicFragment extends Fragment implements TabLayout.OnTabSelected
         public boolean onQueryTextSubmit(String query) {
             applyFilter(query);
 
-            return false;
+            return true;
         }
 
         @Override

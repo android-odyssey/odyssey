@@ -42,6 +42,7 @@ import org.gateshipone.odyssey.viewmodels.GenericViewModel;
 import org.gateshipone.odyssey.viewmodels.SearchViewModel;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProvider;
 
 public class AlbumsFragment extends GenericAlbumsFragment {
@@ -55,13 +56,14 @@ public class AlbumsFragment extends GenericAlbumsFragment {
         return new AlbumsFragment();
     }
 
-    /**
-     * Called to create instantiate the UI of the fragment.
-     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        final View rootView = super.onCreateView(inflater, container, savedInstanceState);
+        return super.onCreateView(inflater, container, savedInstanceState);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
         // setup observer for the live data
         getViewModel().getData().observe(getViewLifecycleOwner(), this::onDataReady);
@@ -74,8 +76,11 @@ public class AlbumsFragment extends GenericAlbumsFragment {
                 removeFilter();
             }
         });
+    }
 
-        return rootView;
+    @Override
+    public void onResume() {
+        super.onResume();
     }
 
     @Override
