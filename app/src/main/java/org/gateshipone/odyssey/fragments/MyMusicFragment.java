@@ -137,23 +137,25 @@ public class MyMusicFragment extends Fragment implements TabLayout.OnTabSelected
         // setup icons for tabs
         final ColorStateList tabColors = tabLayout.getTabTextColors();
         final Resources res = getResources();
-        Drawable drawable = ResourcesCompat.getDrawable(res, R.drawable.ic_recent_actors_24dp, null);
-        if (drawable != null) {
-            Drawable icon = DrawableCompat.wrap(drawable);
-            DrawableCompat.setTintList(icon, tabColors);
-            tabLayout.getTabAt(0).setIcon(icon);
-        }
-        drawable = ResourcesCompat.getDrawable(res, R.drawable.ic_album_24dp, null);
-        if (drawable != null) {
-            Drawable icon = DrawableCompat.wrap(drawable);
-            DrawableCompat.setTintList(icon, tabColors);
-            tabLayout.getTabAt(1).setIcon(icon);
-        }
-        drawable = ResourcesCompat.getDrawable(res, R.drawable.ic_my_library_music_24dp, null);
-        if (drawable != null) {
-            Drawable icon = DrawableCompat.wrap(drawable);
-            DrawableCompat.setTintList(icon, tabColors);
-            tabLayout.getTabAt(2).setIcon(icon);
+        Drawable drawable = null;
+        for (int i = 0; i < tabLayout.getTabCount(); i++) {
+            switch (i) {
+                case 0:
+                    drawable = ResourcesCompat.getDrawable(res, R.drawable.ic_recent_actors_24dp, null);
+                    break;
+                case 1:
+                    drawable = ResourcesCompat.getDrawable(res, R.drawable.ic_album_24dp, null);
+                    break;
+                case 2:
+                    drawable = ResourcesCompat.getDrawable(res, R.drawable.ic_my_library_music_24dp, null);
+                    break;
+            }
+
+            if (drawable != null) {
+                Drawable icon = DrawableCompat.wrap(drawable);
+                DrawableCompat.setTintList(icon, tabColors);
+                tabLayout.getTabAt(i).setIcon(icon);
+            }
         }
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
