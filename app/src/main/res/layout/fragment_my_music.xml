@@ -34,7 +34,7 @@
         app:background="?attr/colorPrimary"
         app:tabIndicatorColor="?attr/colorAccent" />
 
-    <androidx.viewpager.widget.ViewPager
+    <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/my_music_viewpager"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

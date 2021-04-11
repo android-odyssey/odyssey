@@ -22,9 +22,7 @@
 
 package org.gateshipone.odyssey.fragments;
 
-import android.content.ComponentCallbacks2;
 import android.content.Context;
-import android.content.res.Configuration;
 
 import org.gateshipone.odyssey.listener.ToolbarAndFABCallback;
 import org.gateshipone.odyssey.models.GenericModel;
@@ -49,16 +47,6 @@ abstract public class OdysseyBaseFragment<T extends GenericModel> extends Fragme
     protected SwipeRefreshLayout mSwipeRefreshLayout;
 
     /**
-     * Holds if trimming for this Fragment is currently allowed or not.
-     */
-    protected boolean mTrimmingEnabled;
-
-    /**
-     * Callback to check the current memory state
-     */
-    private OdysseyComponentCallback mComponentCallback;
-
-    /**
      * Holds if data is ready of has to be refetched (e.g. after memory trimming)
      */
     private boolean mDataReady;
@@ -71,13 +59,6 @@ abstract public class OdysseyBaseFragment<T extends GenericModel> extends Fragme
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
 
-        if (null == mComponentCallback) {
-            mComponentCallback = new OdysseyComponentCallback();
-        }
-
-        // Register the memory trim callback with the system.
-        context.registerComponentCallbacks(mComponentCallback);
-
         // This makes sure that the container activity has implemented
         // the callback interface. If not, it throws an exception
         try {
@@ -85,14 +66,6 @@ abstract public class OdysseyBaseFragment<T extends GenericModel> extends Fragme
         } catch (ClassCastException e) {
             throw new ClassCastException(context.toString() + " must implement ToolbarAndFABCallback");
         }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-
-        // Unregister the memory trim callback with the system.
-        getActivity().getApplicationContext().unregisterComponentCallbacks(mComponentCallback);
     }
 
     /**
@@ -141,38 +114,5 @@ abstract public class OdysseyBaseFragment<T extends GenericModel> extends Fragme
         mDataReady = model != null;
 
         swapModel(model);
-    }
-
-    /**
-     * This method can be used to prevent one fragment from triming its necessary data (e.g. active in a pager)
-     *
-     * @param enabled Enable the memory trimming
-     */
-    public void enableMemoryTrimming(boolean enabled) {
-        mTrimmingEnabled = enabled;
-    }
-
-    /**
-     * Private callback class used to monitor the memory situation of the system.
-     * If memory reaches a certain point, we will relinquish our data.
-     */
-    private class OdysseyComponentCallback implements ComponentCallbacks2 {
-
-        @Override
-        public void onTrimMemory(int level) {
-            if (mTrimmingEnabled && level >= TRIM_MEMORY_RUNNING_LOW) {
-                getViewModel().clearData();
-
-                mDataReady = false;
-            }
-        }
-
-        @Override
-        public void onConfigurationChanged(Configuration newConfig) {
-        }
-
-        @Override
-        public void onLowMemory() {
-        }
     }
 }

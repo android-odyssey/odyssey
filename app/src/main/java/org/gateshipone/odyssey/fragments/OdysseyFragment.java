@@ -77,14 +77,11 @@ abstract public class OdysseyFragment<T extends GenericModel> extends OdysseyBas
         mAdapter.registerDataSetObserver(mDataSetObserver);
 
         getContent();
-
-        mTrimmingEnabled = false;
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        mTrimmingEnabled = true;
 
         mAdapter.unregisterDataSetObserver(mDataSetObserver);
 

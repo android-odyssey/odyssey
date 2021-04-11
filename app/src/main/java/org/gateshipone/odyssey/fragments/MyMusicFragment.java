@@ -28,7 +28,6 @@ import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.RemoteException;
-import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -37,6 +36,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 
 import org.gateshipone.odyssey.R;
 import org.gateshipone.odyssey.activities.GenericActivity;
@@ -51,12 +51,11 @@ import androidx.appcompat.widget.SearchView;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.viewpager.widget.ViewPager;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
+import androidx.viewpager2.widget.ViewPager2;
 
-public class MyMusicFragment extends Fragment implements TabLayout.OnTabSelectedListener {
+public class MyMusicFragment extends Fragment {
 
     /**
      * Callback to open the recent albums fragment
@@ -71,7 +70,9 @@ public class MyMusicFragment extends Fragment implements TabLayout.OnTabSelected
     /**
      * Save the viewpager for later usage
      */
-    private ViewPager mMyMusicViewPager;
+    private ViewPager2 mMyMusicViewPager;
+
+    private ViewPager2PageChangeCallback mViewPagerCallback;
 
     /**
      * Save the pageradapter for later usage
@@ -88,10 +89,13 @@ public class MyMusicFragment extends Fragment implements TabLayout.OnTabSelected
      */
     private String mSearchString;
 
+    private int mCurrentTab = -1;
+
     /**
      * Constant for state saving
      */
     public final static String MYMUSICFRAGMENT_SAVED_INSTANCE_SEARCH_STRING = "MyMusicFragment.SearchString";
+    public final static String MYMUSICFRAGMENT_SAVED_INSTANCE_CURRENT_TAB = "MyMusicFragment.CurrentTab";
 
     /**
      * key value for arguments of the fragment
@@ -128,40 +132,48 @@ public class MyMusicFragment extends Fragment implements TabLayout.OnTabSelected
 
         // setup viewpager
         mMyMusicViewPager = view.findViewById(R.id.my_music_viewpager);
-        mMyMusicPagerAdapter = new MyMusicPagerAdapter(getChildFragmentManager());
+        mMyMusicPagerAdapter = new MyMusicPagerAdapter(this);
         mMyMusicViewPager.setAdapter(mMyMusicPagerAdapter);
-        mMyMusicViewPager.setOffscreenPageLimit(2);
-        tabLayout.setupWithViewPager(mMyMusicViewPager, false);
-        tabLayout.addOnTabSelectedListener(this);
 
-        // setup icons for tabs
-        final ColorStateList tabColors = tabLayout.getTabTextColors();
-        final Resources res = getResources();
-        Drawable drawable = null;
-        for (int i = 0; i < tabLayout.getTabCount(); i++) {
-            switch (i) {
-                case 0:
-                    drawable = ResourcesCompat.getDrawable(res, R.drawable.ic_recent_actors_24dp, null);
-                    break;
-                case 1:
-                    drawable = ResourcesCompat.getDrawable(res, R.drawable.ic_album_24dp, null);
-                    break;
-                case 2:
-                    drawable = ResourcesCompat.getDrawable(res, R.drawable.ic_my_library_music_24dp, null);
-                    break;
-            }
+        mViewPagerCallback = new ViewPager2PageChangeCallback();
 
-            if (drawable != null) {
-                Drawable icon = DrawableCompat.wrap(drawable);
-                DrawableCompat.setTintList(icon, tabColors);
-                tabLayout.getTabAt(i).setIcon(icon);
-            }
-        }
+        mMyMusicViewPager.registerOnPageChangeCallback(mViewPagerCallback);
+
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
+
+        final ColorStateList tabColors = tabLayout.getTabTextColors();
+
+        new TabLayoutMediator(tabLayout, mMyMusicViewPager,
+                (tab, position) -> {
+                    // setup icon
+                    final Resources res = getResources();
+                    Drawable drawable = null;
+
+                    switch (position) {
+                        case 0:
+                            drawable = ResourcesCompat.getDrawable(res, R.drawable.ic_recent_actors_24dp, null);
+                            break;
+                        case 1:
+                            drawable = ResourcesCompat.getDrawable(res, R.drawable.ic_album_24dp, null);
+                            break;
+                        case 2:
+                            drawable = ResourcesCompat.getDrawable(res, R.drawable.ic_my_library_music_24dp, null);
+                            break;
+                    }
+
+                    if (drawable != null) {
+                        Drawable icon = DrawableCompat.wrap(drawable);
+                        DrawableCompat.setTintList(icon, tabColors);
+                        tab.setIcon(icon);
+                    }
+                }
+        ).attach();
 
         // try to resume the saved search string
         if (savedInstanceState != null) {
             mSearchString = savedInstanceState.getString(MYMUSICFRAGMENT_SAVED_INSTANCE_SEARCH_STRING);
+            mCurrentTab = savedInstanceState.getInt(MYMUSICFRAGMENT_SAVED_INSTANCE_CURRENT_TAB);
+            mMyMusicViewPager.setCurrentItem(mCurrentTab, false);
         }
 
         // activate options menu in toolbar
@@ -171,7 +183,7 @@ public class MyMusicFragment extends Fragment implements TabLayout.OnTabSelected
         final Bundle args = getArguments();
 
         // only set requested tab if no state was saved
-        if (args != null && savedInstanceState == null) {
+        if (args != null && savedInstanceState == null && mCurrentTab == -1) {
             final DEFAULTTAB tab = DEFAULTTAB.values()[args.getInt(ARG_REQUESTED_TAB)];
 
             switch (tab) {
@@ -194,6 +206,7 @@ public class MyMusicFragment extends Fragment implements TabLayout.OnTabSelected
 
         // save the already typed search string (or null if nothing is entered)
         outState.putString(MYMUSICFRAGMENT_SAVED_INSTANCE_SEARCH_STRING, mSearchString);
+        outState.putInt(MYMUSICFRAGMENT_SAVED_INSTANCE_CURRENT_TAB, mCurrentTab);
     }
 
     /**
@@ -217,6 +230,13 @@ public class MyMusicFragment extends Fragment implements TabLayout.OnTabSelected
         } catch (ClassCastException e) {
             throw new ClassCastException(context.toString() + " must implement OnRecentAlbumsSelectedListener");
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        mMyMusicViewPager.unregisterOnPageChangeCallback(mViewPagerCallback);
     }
 
     /**
@@ -256,61 +276,6 @@ public class MyMusicFragment extends Fragment implements TabLayout.OnTabSelected
             default:
                 return null;
         }
-    }
-
-    /**
-     * Called when a tab enters the selected state.
-     */
-    @Override
-    public void onTabSelected(TabLayout.Tab tab) {
-        // set viewpager to current page
-        mMyMusicViewPager.setCurrentItem(tab.getPosition());
-
-        if (mToolbarAndFABCallback != null) {
-            // show fab only for AllTracksFragment
-            View.OnClickListener listener = getPlayButtonListener(tab.getPosition());
-
-            // set up play button
-            mToolbarAndFABCallback.setupFAB(listener);
-        }
-
-        if (mOptionMenu != null) {
-            // show recents options only for the albums fragment
-            final MenuItem item = mOptionMenu.findItem(R.id.action_show_recent_albums);
-            if (item != null) {
-                item.setVisible(mMyMusicViewPager.getCurrentItem() == 1);
-            }
-        }
-
-        final OdysseyFragment<?> fragment = mMyMusicPagerAdapter.getRegisteredFragment(tab.getPosition());
-
-        if (fragment != null) {
-            fragment.getContent();
-
-            // Disable memory trimming to prevent removing the shown data
-            fragment.enableMemoryTrimming(false);
-        }
-    }
-
-    /**
-     * Called when a tab leaves the selected state.
-     * <p/>
-     * This method will take care of dismissing the searchview and showing the fab.
-     */
-    @Override
-    public void onTabUnselected(TabLayout.Tab tab) {
-        final OdysseyFragment<?> fragment = mMyMusicPagerAdapter.getRegisteredFragment(tab.getPosition());
-
-        if (fragment != null) {
-            // Reenable memory trimming now, because the Fragment is hidden
-            fragment.enableMemoryTrimming(true);
-        }
-    }
-
-
-    @Override
-    public void onTabReselected(TabLayout.Tab tab) {
-
     }
 
     /**
@@ -381,39 +346,17 @@ public class MyMusicFragment extends Fragment implements TabLayout.OnTabSelected
     /**
      * Custom pager adapter to retrieve already registered fragments.
      */
-    private static class MyMusicPagerAdapter extends FragmentStatePagerAdapter {
+    private static class MyMusicPagerAdapter extends FragmentStateAdapter {
         static final int NUMBER_OF_PAGES = 3;
 
-        private final SparseArray<OdysseyFragment<?>> mRegisteredFragments;
-
-        public MyMusicPagerAdapter(FragmentManager fm) {
-            super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
-            mRegisteredFragments = new SparseArray<>();
+        public MyMusicPagerAdapter(Fragment parent) {
+            super(parent);
         }
 
         @NonNull
         @Override
-        public Object instantiateItem(@NonNull ViewGroup container, int position) {
-            OdysseyFragment<?> fragment = (OdysseyFragment<?>) super.instantiateItem(container, position);
-            mRegisteredFragments.put(position, fragment);
-            return fragment;
-        }
-
-        @Override
-        public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
-            mRegisteredFragments.remove(position);
-            super.destroyItem(container, position, object);
-        }
-
-        @Override
-        public int getItemPosition(@NonNull Object object) {
-            return POSITION_NONE;
-        }
-
-        @NonNull
-        @Override
-        public Fragment getItem(int i) {
-            switch (i) {
+        public Fragment createFragment(int position) {
+            switch (position) {
                 case 0:
                     return ArtistsFragment.newInstance();
                 case 1:
@@ -427,13 +370,34 @@ public class MyMusicFragment extends Fragment implements TabLayout.OnTabSelected
         }
 
         @Override
-        public int getCount() {
-            // this is done in order to reload all tabs
+        public int getItemCount() {
             return NUMBER_OF_PAGES;
         }
+    }
 
-        public OdysseyFragment<?> getRegisteredFragment(int position) {
-            return mRegisteredFragments.get(position);
+    private class ViewPager2PageChangeCallback extends ViewPager2.OnPageChangeCallback {
+
+        @Override
+        public void onPageSelected(int position) {
+            super.onPageSelected(position);
+
+            mCurrentTab = position;
+
+            if (mToolbarAndFABCallback != null) {
+                // show fab only for AllTracksFragment
+                View.OnClickListener listener = getPlayButtonListener(position);
+
+                // set up play button
+                mToolbarAndFABCallback.setupFAB(listener);
+            }
+
+            if (mOptionMenu != null) {
+                // show recents options only for the albums fragment
+                final MenuItem item = mOptionMenu.findItem(R.id.action_show_recent_albums);
+                if (item != null) {
+                    item.setVisible(position == 1);
+                }
+            }
         }
     }
 

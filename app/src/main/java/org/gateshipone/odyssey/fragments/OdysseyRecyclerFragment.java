@@ -76,14 +76,11 @@ abstract public class OdysseyRecyclerFragment<T extends GenericModel, VH extends
         mRecyclerAdapter.registerAdapterDataObserver(mDataSetObserver);
 
         getContent();
-
-        mTrimmingEnabled = false;
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        mTrimmingEnabled = true;
 
         mRecyclerAdapter.unregisterAdapterDataObserver(mDataSetObserver);
     }
