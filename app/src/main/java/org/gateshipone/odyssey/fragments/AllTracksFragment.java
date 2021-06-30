@@ -35,6 +35,10 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.preference.PreferenceManager;
+
 import org.gateshipone.odyssey.R;
 import org.gateshipone.odyssey.activities.GenericActivity;
 import org.gateshipone.odyssey.adapter.TracksAdapter;
@@ -46,10 +50,6 @@ import org.gateshipone.odyssey.utils.PreferenceHelper;
 import org.gateshipone.odyssey.utils.ThemeUtils;
 import org.gateshipone.odyssey.viewmodels.GenericViewModel;
 import org.gateshipone.odyssey.viewmodels.TrackViewModel;
-
-import androidx.annotation.NonNull;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.preference.PreferenceManager;
 
 public class AllTracksFragment extends OdysseyFragment<TrackModel> implements AdapterView.OnItemClickListener {
 
@@ -204,10 +204,10 @@ public class AllTracksFragment extends OdysseyFragment<TrackModel> implements Ad
         TrackModel clickedTrack = mAdapter.getItem(position);
         String artistTitle = clickedTrack.getTrackArtistName();
 
-        long artistID = MusicLibraryHelper.getArtistIDFromName(artistTitle, getActivity());
+        long artistId = MusicLibraryHelper.getArtistIDFromName(artistTitle, getActivity());
 
         // Send the event to the host activity
-        mArtistSelectedCallback.onArtistSelected(new ArtistModel(artistTitle, artistID), null);
+        mArtistSelectedCallback.onArtistSelected(new ArtistModel(artistTitle, artistId), null);
     }
 
     /**

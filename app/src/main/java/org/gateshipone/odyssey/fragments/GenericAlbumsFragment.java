@@ -33,6 +33,9 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.preference.PreferenceManager;
+
 import org.gateshipone.odyssey.R;
 import org.gateshipone.odyssey.activities.GenericActivity;
 import org.gateshipone.odyssey.adapter.AlbumsAdapter;
@@ -43,9 +46,6 @@ import org.gateshipone.odyssey.models.AlbumModel;
 import org.gateshipone.odyssey.utils.ScrollSpeedListener;
 import org.gateshipone.odyssey.utils.ThemeUtils;
 import org.gateshipone.odyssey.viewitems.GenericImageViewItem;
-
-import androidx.annotation.NonNull;
-import androidx.preference.PreferenceManager;
 
 public abstract class GenericAlbumsFragment extends OdysseyFragment<AlbumModel> implements AdapterView.OnItemClickListener {
 
@@ -166,7 +166,7 @@ public abstract class GenericAlbumsFragment extends OdysseyFragment<AlbumModel> 
     protected void enqueueAlbum(int position) {
         // identify current album
         AlbumModel clickedAlbum = mAdapter.getItem(position);
-        String albumKey = clickedAlbum.getAlbumKey();
+        long albumId = clickedAlbum.getAlbumId();
 
         // Read order preference
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getContext());
@@ -174,7 +174,7 @@ public abstract class GenericAlbumsFragment extends OdysseyFragment<AlbumModel> 
 
         // enqueue album
         try {
-            ((GenericActivity) getActivity()).getPlaybackService().enqueueAlbum(albumKey, trackOrderKey);
+            ((GenericActivity) getActivity()).getPlaybackService().enqueueAlbum(albumId, trackOrderKey);
         } catch (RemoteException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -190,7 +190,7 @@ public abstract class GenericAlbumsFragment extends OdysseyFragment<AlbumModel> 
     protected void playAlbum(int position) {
         // identify current album
         AlbumModel clickedAlbum = mAdapter.getItem(position);
-        String albumKey = clickedAlbum.getAlbumKey();
+        long albumId = clickedAlbum.getAlbumId();
 
         // Read order preference
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getContext());
@@ -198,7 +198,7 @@ public abstract class GenericAlbumsFragment extends OdysseyFragment<AlbumModel> 
 
         // play album
         try {
-            ((GenericActivity) getActivity()).getPlaybackService().playAlbum(albumKey, trackOrderKey, 0);
+            ((GenericActivity) getActivity()).getPlaybackService().playAlbum(albumId, trackOrderKey, 0);
         } catch (RemoteException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

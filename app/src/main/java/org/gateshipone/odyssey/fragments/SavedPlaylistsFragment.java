@@ -34,6 +34,9 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.lifecycle.ViewModelProvider;
+
 import org.gateshipone.odyssey.R;
 import org.gateshipone.odyssey.activities.GenericActivity;
 import org.gateshipone.odyssey.adapter.SavedPlaylistsAdapter;
@@ -43,9 +46,6 @@ import org.gateshipone.odyssey.playbackservice.storage.OdysseyDatabaseManager;
 import org.gateshipone.odyssey.utils.MusicLibraryHelper;
 import org.gateshipone.odyssey.viewmodels.GenericViewModel;
 import org.gateshipone.odyssey.viewmodels.PlaylistViewModel;
-
-import androidx.annotation.NonNull;
-import androidx.lifecycle.ViewModelProvider;
 
 public class SavedPlaylistsFragment extends OdysseyFragment<PlaylistModel> implements AdapterView.OnItemClickListener {
 
@@ -225,10 +225,10 @@ public class SavedPlaylistsFragment extends OdysseyFragment<PlaylistModel> imple
 
         switch (clickedPlaylist.getPlaylistType()) {
             case MEDIASTORE:
-                reloadData = MusicLibraryHelper.removePlaylist(clickedPlaylist.getPlaylistID(), getActivity().getApplicationContext());
+                reloadData = MusicLibraryHelper.removePlaylist(clickedPlaylist.getPlaylistId(), getActivity().getApplicationContext());
                 break;
             case ODYSSEY_LOCAL:
-                reloadData = OdysseyDatabaseManager.getInstance(getContext()).removePlaylist(clickedPlaylist.getPlaylistID());
+                reloadData = OdysseyDatabaseManager.getInstance(getContext()).removePlaylist(clickedPlaylist.getPlaylistId());
                 break;
         }
 

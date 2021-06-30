@@ -36,6 +36,11 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.core.graphics.drawable.DrawableCompat;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.preference.PreferenceManager;
+
 import org.gateshipone.odyssey.R;
 import org.gateshipone.odyssey.activities.GenericActivity;
 import org.gateshipone.odyssey.adapter.TracksAdapter;
@@ -49,11 +54,6 @@ import org.gateshipone.odyssey.viewmodels.GenericViewModel;
 import org.gateshipone.odyssey.viewmodels.PlaylistTrackViewModel;
 
 import java.util.List;
-
-import androidx.annotation.NonNull;
-import androidx.core.graphics.drawable.DrawableCompat;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.preference.PreferenceManager;
 
 public class PlaylistTracksFragment extends OdysseyFragment<TrackModel> implements AdapterView.OnItemClickListener {
 
@@ -350,10 +350,10 @@ public class PlaylistTracksFragment extends OdysseyFragment<TrackModel> implemen
 
         switch (mPlaylistModel.getPlaylistType()) {
             case MEDIASTORE:
-                reloadData = MusicLibraryHelper.removeTrackFromPlaylist(mPlaylistModel.getPlaylistID(), position, getContext().getApplicationContext());
+                reloadData = MusicLibraryHelper.removeTrackFromPlaylist(mPlaylistModel.getPlaylistId(), position, getContext().getApplicationContext());
                 break;
             case ODYSSEY_LOCAL:
-                reloadData = OdysseyDatabaseManager.getInstance(getContext()).removeTrackFromPlaylist(mPlaylistModel.getPlaylistID(), position);
+                reloadData = OdysseyDatabaseManager.getInstance(getContext()).removeTrackFromPlaylist(mPlaylistModel.getPlaylistId(), position);
                 break;
         }
 
